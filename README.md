@@ -80,3 +80,8 @@ Scheduler
    {
   "error": "비밀번호가 일치하지 않습니다."
    }
+
+ERD
+![image](https://github.com/user-attachments/assets/470b3e78-7fb3-4a3e-87b4-36d44b5eeae6)
+
+
