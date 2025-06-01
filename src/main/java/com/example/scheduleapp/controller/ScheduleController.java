@@ -45,4 +45,5 @@ public class ScheduleController {
         scheduleService.deleteSchedule(id, dto);
         return ResponseEntity.ok("일정이 삭제되었습니다.");
     }
+
 }

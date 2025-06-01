@@ -1,6 +1,7 @@
 package com.example.scheduleapp.repository;
 
 import com.example.scheduleapp.model.Schedule;
+import com.example.scheduleapp.dto.ScheduleResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -91,4 +92,24 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id, password);
         return count != null && count > 0;
     }
+    public List<ScheduleResponseDto> findAllPaged(int page, int size) {
+        String sql = """
+        SELECT s.id, s.task, s.created_at, s.updated_at, w.name AS writer_name
+        FROM schedule s
+        JOIN writer w ON s.writer_id = w.id
+        ORDER BY s.updated_at DESC
+        LIMIT ? OFFSET ?
+    """;
+
+        int offset = page * size;
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new ScheduleResponseDto(
+                rs.getLong("id"),
+                rs.getString("task"),
+                rs.getString("writer_name"),
+                rs.getTimestamp("created_at").toLocalDateTime(),
+                rs.getTimestamp("updated_at").toLocalDateTime()
+        ), size, offset);
+    }
+
 }

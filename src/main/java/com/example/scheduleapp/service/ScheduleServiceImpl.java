@@ -1,8 +1,10 @@
 package com.example.scheduleapp.service;
 
 import com.example.scheduleapp.dto.*;
+import com.example.scheduleapp.exception.*;
 import com.example.scheduleapp.model.Schedule;
 import com.example.scheduleapp.repository.ScheduleRepository;
+import com.example.scheduleapp.repository.ScheduleRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -42,9 +44,18 @@ public class ScheduleServiceImpl implements ScheduleService {
     @Override
     public ScheduleResponseDto getSchedule(Long id) {
         Schedule schedule = scheduleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("일정을 찾을 수 없습니다."));
-        return toResponseDto(schedule);
+                .orElseThrow(() -> new ScheduleNotFoundException(id));
+
+        return new ScheduleResponseDto(
+                schedule.getId(),
+                schedule.getTask(),
+                schedule.getWriter(), // 직접 저장된 필드 사용
+                schedule.getCreatedAt(),
+                schedule.getUpdatedAt()
+        );
     }
+
+
 
     @Override
     public ScheduleResponseDto updateSchedule(Long id, ScheduleRequestDto dto) {
@@ -83,4 +94,9 @@ public class ScheduleServiceImpl implements ScheduleService {
                 schedule.getUpdatedAt()
         );
     }
+
+    public List<ScheduleResponseDto> getSchedulesPaged(int page, int size) {
+        return scheduleRepository.findAllPaged(page, size);
+    }
+
 }
