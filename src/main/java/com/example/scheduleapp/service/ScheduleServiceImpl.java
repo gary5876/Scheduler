@@ -49,41 +49,43 @@ public class ScheduleServiceImpl implements ScheduleService {
         return new ScheduleResponseDto(
                 schedule.getId(),
                 schedule.getTask(),
-                schedule.getWriter(), // 직접 저장된 필드 사용
+                schedule.getWriter(),
                 schedule.getCreatedAt(),
                 schedule.getUpdatedAt()
         );
     }
 
-
-
     @Override
     public ScheduleResponseDto updateSchedule(Long id, ScheduleRequestDto dto) {
-        if (!scheduleRepository.checkPassword(id, dto.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        Schedule schedule = scheduleRepository.findById(id)
+                .orElseThrow(() -> new ScheduleNotFoundException(id));
+
+        if (!schedule.getPassword().equals(dto.getPassword())) {
+            throw new PasswordNotMatchException();
         }
 
-        Schedule updated = new Schedule(
-                id,
-                dto.getTask(),
-                dto.getWriter(),
-                dto.getPassword(),
-                null,
-                LocalDateTime.now()
-        );
-        boolean result = scheduleRepository.update(id, updated);
+        schedule.setTask(dto.getTask());
+        schedule.setWriter(dto.getWriter());
+        schedule.setUpdatedAt(LocalDateTime.now());
+
+        boolean result = scheduleRepository.update(id, schedule);
         if (!result) throw new RuntimeException("수정에 실패했습니다.");
         return getSchedule(id);
     }
 
     @Override
     public void deleteSchedule(Long id, ScheduleDeleteRequestDto dto) {
-        if (!scheduleRepository.checkPassword(id, dto.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        Schedule schedule = scheduleRepository.findById(id)
+                .orElseThrow(() -> new ScheduleNotFoundException(id));
+
+        if (!schedule.getPassword().equals(dto.getPassword())) {
+            throw new PasswordNotMatchException();
         }
-        boolean result = scheduleRepository.delete(id);
-        if (!result) throw new RuntimeException("삭제에 실패했습니다.");
+
+        scheduleRepository.delete(id);
     }
+
+
 
     private ScheduleResponseDto toResponseDto(Schedule schedule) {
         return new ScheduleResponseDto(
