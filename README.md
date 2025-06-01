@@ -1,87 +1,149 @@
-# Scheduler
-Scheduler
+# Scheduler lv 6
 
-기능목록
-일정생성,전체 일정조회, 단건 일정조회, 일정수정, 일정 삭제
+## 기능 요약
 
-1. 일정생성
-   메서드 POST
-   url : /schedules
-   request body :
-   {
-   "task": "공부",
-   "writer":철수",
-   "password";"1234"
-   }
-   response :
-   {
+- 일정 등록
+- 일정 단건 조회
+- 일정 전체 조회 (조건 및 페이지네이션 지원)
+- 일정 수정 (비밀번호 확인 필요)
+- 일정 삭제 (비밀번호 확인 필요)
+
+### 1. 일정 생성
+
+- URL: `/schedules`
+- Method: `POST`
+- Request Body:
+
+```json
+{
+  "task": "과제하기",
+  "writer": "김길동",
+  "password": "1234",
+  "email": "road@test.com"
+}
+```
+
+- Response:
+
+```json
+{
   "id": 1,
-  "task": "스터디 준비",
-  "writer": "철수",
-  "createdAt": "2025-05-25T14:30:00",
-  "updatedAt": "2025-05-25T14:30:00"
-   }
-2. 전체 일정조회
-   메서드 : GET
-   url : /schedules
-   query parameters : writer, date
-   response :
-   {
-    "id": 1,
-    "task": "스터디 준비",
-    "writer": "철수",
-    "createdAt": "2025-05-25T14:30:00",
-    "updatedAt": "2025-05-25T15:30:00"
-   }
-3. 단건 일정조회
-   메서드 : GET
-   url : /schedules/{id}
-   response:
-   {
+  "task": "과제하기",
+  "writer": "김길동",
+  "createdAt": "2025-05-31T10:00:00",
+  "updatedAt": "2025-05-31T10:00:00"
+}
+```
+
+---
+
+### 2. 일정 단건 조회
+
+- URL: `/schedules/{id}`
+- Method: `GET`
+- Response:
+
+```json
+{
   "id": 1,
-  "task": "스터디 준비",
-  "writer": "철수",
-  "createdAt": "2025-05-25T14:30:00",
-  "updatedAt": "2025-05-25T15:30:00"
-  }
-4. 일정 수정
-   메서드 : PUT
-   url : /schedules/{id}
-   request body :
-   {
-  "task": "스터디 정리",
-  "writer": "영희",
+  "task": "운동하기",
+  "writer": "홍길동",
+  "createdAt": "2024-05-01T10:00:00",
+  "updatedAt": "2024-05-01T10:00:00"
+}
+```
+
+---
+
+### 3. 일정 전체 조회 (조건 + 페이지네이션)
+
+- URL: `/schedules`
+- Method: `GET`
+- Query Parameters:
+
+    - `writer` (optional): 작성자 이름
+    - `date` (optional): 수정일 (형식: `YYYY-MM-DD`)
+    - `page` (optional): 페이지 번호 (0부터 시작)
+    - `size` (optional): 페이지당 개수
+- Response:
+
+```json
+{
+  "id": 1,
+  "task": "운동하기",
+  "writer": "홍길동",
+  "createdAt": "2024-05-01T10:00:00",
+  "updatedAt": "2024-05-01T10:00:00"
+}
+```
+
+---
+
+### 4. 일정 수정
+
+- URL: `/schedules/{id}`
+- Method: `PUT`
+- Request Body:
+
+```json
+{
+  "task": "헬스하기",
+  "writer": "김길동",
   "password": "1234"
-   }
-   response(success):
-   {
-  "id": 1,
-  "task": "스터디 정리",
-  "writer": "영희",
-  "createdAt": "2025-05-25T14:30:00",
-  "updatedAt": "2025-05-25T16:00:00"
-   }
-   response(fail):
-   {
-  "error": "비밀번호가 일치하지 않습니다."
-   }
-5. 일정 삭제
-   메서드 : DELETE
-   url : /schedules/{id}
-   request body:
-   {
-  "password": "1234"
-   }
-   response(success):
-   {
-  "message": "일정이 삭제되었습니다."
-   }
-   response(fail):
-   {
-  "error": "비밀번호가 일치하지 않습니다."
-   }
+}
+```
 
-ERD
-![image](https://github.com/user-attachments/assets/470b3e78-7fb3-4a3e-87b4-36d44b5eeae6)
+- Response:
+
+```json
+{
+  "id": 1,
+  "task": "헬스하기",
+  "writer": "김길동",
+  "createdAt": "2025-05-31T10:00:00",
+  "updatedAt": "2025-06-02T09:00:00"
+}
+```
+
+---
+
+### 5. 일정 삭제
+
+- URL: `/schedules/{id}`
+- Method: `DELETE`
+- Request Body:
+
+```json
+{
+  "password": "1234"
+}
+```
+
+- Response:
+
+```json
+{
+  "message": "삭제 완료"
+}
+```
+
+---
+
+### 6. 유효성 검사 조건
+
+- `task`: 200자 이내, 비어 있을 수 없음
+- `password`: 필수 입력
+- `email`: 형식에 맞아야 함
+
+---
+
+### 작성자 및 연관관계
+
+- 일정은 내부적으로 `writer_id`로 작성자와 연결됨
+- 작성자(`writer`)는 이름, 이메일, 생성/수정일을 보유함
+- 클라이언트는 이름/이메일만 입력하면 됨 (ID는 내부 관리)
+
+---
+
 
 
